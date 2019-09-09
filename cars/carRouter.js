@@ -36,11 +36,11 @@ router.get('/:id', (req, res) => {
 router.post('/', (req, res) => {
     console.log(req.body);
     // const { name, budget } = req.body;
-    if (!req.body.VIN || !req.body.make || req.body.model || req.body.mileage ) {
+    if (!req.body.VIN || !req.body.make || !req.body.model || !req.body.mileage ) {
         return res.status(400).json({ error: "Requires VIN, make, model, and mileage." });
     }
     db("cars")
-        .insert({ VIN: req.body.VIN, make: req.body.make, model: req.body.model, mileage: req.body.mileage })
+        .insert({ VIN: req.body.VIN, make: req.body.make, model: req.body.model, mileage: req.body.mileage, 'transmission type': req.body['transmission type'], 'status of the title': req.body['status of the title'] })
         .then(([id]) => {
             db("cars")
                 .where({ id })
@@ -87,13 +87,13 @@ router.delete('/:id', (req, res) => {
 
 // PUT request for projects
 router.put('/:id', (req, res) => {
-    if (!req.body.VIN || !req.body.make || req.body.model || req.body.mileage) {
+    if (!req.body.VIN || !req.body.make || !req.body.model || !req.body.mileage) {
         return res.status(400).json({ error: "Requires VIN, make, model, and mileage." });
     }
 
     db("cars")
         .where({ id: req.params.id })
-        .update({ VIN: req.body.VIN, make: req.body.make, model: req.body.model, mileage: req.body.mileage })
+        .update({ VIN: req.body.VIN, make: req.body.make, model: req.body.model, mileage: req.body.mileage, 'transmission type': req.body['transmission type'], 'status of the title': req.body['status of the title'] })
         .then(updated => {
             console.log(updated);
             if (updated) {
