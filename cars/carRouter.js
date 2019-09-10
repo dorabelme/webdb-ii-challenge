@@ -1,11 +1,11 @@
 const express = require("express");
-const db = require("../data/dbConfig.js");
+const db = require("../data/dbHelpers.js");
 
 const router = express.Router();
 
 // GET requests for projects
 router.get('/', (req, res) => {
-    db("cars")
+    db.get()
         .then(cars => res.status(200).json(cars))
         .catch(err => {
             console.log(err);
@@ -14,9 +14,8 @@ router.get('/', (req, res) => {
 });
 
 router.get('/:id', (req, res) => {
-    db("cars")
-        .where({ id: req.params.id })
-        .first()
+    const { id } = req.params;
+    db.getById(id)
         .then(car => {
             console.log(car);
             if (car) {
@@ -34,17 +33,12 @@ router.get('/:id', (req, res) => {
 
 // POST request for projects
 router.post('/', (req, res) => {
-    console.log(req.body);
-    // const { name, budget } = req.body;
-    if (!req.body.VIN || !req.body.make || !req.body.model || !req.body.mileage ) {
+    const { id } = req.params;
+    const { VIN, make, model, mileage } = req.body;
+    if (!VIN || !make || !model || !mileage ) {
         return res.status(400).json({ error: "Requires VIN, make, model, and mileage." });
     }
-    db("cars")
-        .insert({ VIN: req.body.VIN, make: req.body.make, model: req.body.model, mileage: req.body.mileage, 'transmission type': req.body['transmission type'], 'status of the title': req.body['status of the title'] })
-        .then(([id]) => {
-            db("cars")
-                .where({ id })
-                .first()
+        db.insert({ VIN, make, model, mileage, 'transmission type': req.body['transmission type'], 'status of the title': req.body['status of the title'] })
                 .then(car => {
                     console.log(car);
                     if (car) {
@@ -56,8 +50,7 @@ router.post('/', (req, res) => {
                 .catch(err => {
                     console.log(err);
                     res.status(500).json({ error: "Server error retrieving car." });
-                });
-        })
+                })
         .catch(err => {
             console.log(err);
             res.status(500).json({ error: "Server error inserting car." });
@@ -67,9 +60,8 @@ router.post('/', (req, res) => {
 
 // DELETE request for projects
 router.delete('/:id', (req, res) => {
-    db("cars")
-        .where({ id: req.params.id })
-        .del()
+    const { id } = req.params;
+    db.remove(id)
         .then(car => {
             console.log(car);
             if (car) {
@@ -87,19 +79,17 @@ router.delete('/:id', (req, res) => {
 
 // PUT request for projects
 router.put('/:id', (req, res) => {
-    if (!req.body.VIN || !req.body.make || !req.body.model || !req.body.mileage) {
+    const { id } = req.params;
+    const { VIN, make, model, mileage } = req.body;
+    if (!VIN || !make || !model || !mileage) {
         return res.status(400).json({ error: "Requires VIN, make, model, and mileage." });
     }
 
-    db("cars")
-        .where({ id: req.params.id })
-        .update({ VIN: req.body.VIN, make: req.body.make, model: req.body.model, mileage: req.body.mileage, 'transmission type': req.body['transmission type'], 'status of the title': req.body['status of the title'] })
+    db.update(id, { VIN, make, model, mileage, 'transmission type': req.body['transmission type'], 'status of the title': req.body['status of the title'] })
         .then(updated => {
             console.log(updated);
             if (updated) {
-                db("cars")
-                    .where({ id: req.params.id })
-                    .first()
+                db.getById(id)
                     .then(car => res.status(200).json(car))
                     .catch(err => {
                         console.log(err);
